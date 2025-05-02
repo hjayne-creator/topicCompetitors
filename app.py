@@ -286,7 +286,7 @@ def generate_summary(top_domains):
     try:
         # New OpenAI API format
         response = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful SEO analyst."},
                 {"role": "user", "content": prompt}
@@ -296,7 +296,7 @@ def generate_summary(top_domains):
     except AttributeError:
         # Old OpenAI API format
         response = client.ChatCompletion.create(
-            model="gpt-4o-mini",
+            model="gpt-4",
             messages=[
                 {"role": "system", "content": "You are a helpful SEO analyst."},
                 {"role": "user", "content": prompt}

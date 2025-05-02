@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Topic Competitive Analysis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen">
+    <div class="container mx-auto p-6">
+        <header class="mb-10">
+            <h1 class="text-3xl font-bold text-center text-indigo-700">Topic Analysis Results</h1>
+            <p class="text-center text-gray-600 mt-2">Analysis for: {{ result.main_topic }}</p>
+        </header>
+        
+        <!-- Summary -->
+        <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2 mb-6">
+            <h2 class="text-xl font-bold text-indigo-600 mb-4">Analysis Summary</h2>
+            <div class="bg-gray-50 p-4 rounded text-gray-800">
+                {{ result.summary }}
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Topic Analysis -->
+            <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+                <h2 class="text-xl font-bold text-indigo-600 mb-4">Topic Analysis</h2>
+                <div class="mb-4">
+                    <h3 class="font-semibold text-gray-700">Main Topic:</h3>
+                    <p class="text-gray-800 bg-indigo-50 p-2 rounded">{{ result.main_topic }}</p>
+                </div>
+                <div class="mb-4">
+                    <h3 class="font-semibold text-gray-700 mb-2">Subtopics:</h3>
+                    <ul class="list-disc list-inside bg-indigo-50 p-3 rounded">
+                        {% for subtopic in result.subtopics %}
+                            <li class="text-gray-800 mb-1">{{ subtopic }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="font-semibold text-gray-700 mb-2">Top 5 Keywords:</h3>
+                    <ul class="list-disc list-inside bg-indigo-50 p-3 rounded">
+                        {% for keyword in result.keywords[:5] %}
+                            <li class="text-gray-800 mb-1">{{ keyword.keyword }}</li>
+                        {% endfor %}
+                        <li class="text-gray-500 mt-2">...and {{ result.keywords|length - 5 }} more</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Top Domains -->
+            <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+                <h2 class="text-xl font-bold text-indigo-600 mb-4">Top Competitor Domains</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Domain</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Appearances</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Unique URLs/th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Has Blog</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for domain in result.top_domains[:10] %}
+                                <tr class="domain-row" data-domain="{{ domain.domain }}">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ domain.domain }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ domain.total_appearances }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ domain.count }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        {% if domain.has_blog %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Yes</span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">No</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <button type="button" class="toggle-urls text-indigo-600 hover:text-indigo-900 focus:outline-none" data-domain="{{ domain.domain }}">
+                                            <span class="show-text">Show URLs</span>
+                                            <span class="hide-text hidden">Hide URLs</span>
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="url-row hidden" id="urls-{{ domain.domain|replace('.', '-') }}">
+                                    <td colspan="5" class="px-6 py-4">
+                                        <div class="bg-gray-50 p-3 rounded-lg">
+                                            <h4 class="font-medium text-gray-700 mb-2">URLs for {{ domain.domain }}</h4>
+                                            <ul class="list-disc list-inside text-sm text-gray-600 space-y-1">
+                                                {% if domain.urls and domain.urls|length > 0 %}
+                                                    {% for url in domain.urls %}
+                                                        <li>
+                                                            <a href="{{ url }}" target="_blank" class="text-indigo-600 hover:underline break-all">
+                                                                {{ url }}
+                                                            </a>
+                                                        </li>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <li class="text-gray-500">No URLs found</li>
+                                                {% endif %}
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Keywords -->
+            <div class="bg-white rounded-lg shadow-md p-6 lg:col-span-2">
+                <h2 class="text-xl font-bold text-indigo-600 mb-4">Keywords Analysis</h2>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead>
+                            <tr>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Related Topic</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Search Volume</th>
+                                <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Top Result</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for keyword in result.keywords %}
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ keyword.keyword }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ keyword.related_topic }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ keyword.volume }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-500">
+                                        {% if keyword.top_results|length > 0 %}
+                                            <a href="{{ keyword.top_results[0].link }}" target="_blank" class="text-indigo-600 hover:text-indigo-900">
+                                                {{ keyword.top_results[0].title }}
+                                            </a>
+                                        {% else %}
+                                            No results
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-8 text-center">
+            <a href="/" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg hover:bg-indigo-700 transition-colors duration-300">
+                Research Another Topic
+            </a>
+        </div>
+        
+        <footer class="mt-10 text-center text-gray-500 text-sm">
+            <p>This analysis was generated automatically and should be used for research purposes only.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleButtons = document.querySelectorAll('.toggle-urls');
+            
+            toggleButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const domain = this.getAttribute('data-domain');
+                    const domainId = domain.replace(/\./g, '-');
+                    const urlRow = document.getElementById(`urls-${domainId}`);
+                    
+                    // Toggle visibility
+                    urlRow.classList.toggle('hidden');
+                    
+                    // Toggle button text
+                    const showText = this.querySelector('.show-text');
+                    const hideText = this.querySelector('.hide-text');
+                    showText.classList.toggle('hidden');
+                    hideText.classList.toggle('hidden');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

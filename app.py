@@ -108,7 +108,7 @@ def generate_keywords(main_topic, subtopics):
         try:
             # New OpenAI API format
             response = client.chat.completions.create(
-                model="gpt-4o-mini",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are an SEO analyst that generates search keywords."},
                     {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
@@ -118,7 +118,7 @@ def generate_keywords(main_topic, subtopics):
         except AttributeError:
             # Old OpenAI API format
             response = client.ChatCompletion.create(
-                model="gpt-4o-mini",
+                model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are an SEO analyst that generates search keywords."},
                     {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
@@ -171,12 +171,19 @@ def get_search_volume(keywords_data):
                 # Parse the response
                 lines = response.text.strip().split('\n')
                 if len(lines) > 1:
-                    headers = lines[0].split(';')
-                    values = lines[1].split(';')
+                    headers = [h.strip() for h in lines[0].split(';')]
+                    values = [v.strip() for v in lines[1].split(';')]
                     result = dict(zip(headers, values))
                     
-                    # Extract search volume
-                    volume = result.get('Nq', '0')
+                    # Try all possible keys for search volume
+                    volume = (
+                        result.get('Nq') or
+                        result.get('Search Volume') or
+                        result.get('Search Volume\r') or
+                        '0'
+                    )
+                    # Remove any stray whitespace or carriage returns
+                    volume = volume.strip().replace('\r', '')
                     keyword_data["volume"] = int(volume) if volume.isdigit() else 0
                 else:
                     keyword_data["volume"] = 0

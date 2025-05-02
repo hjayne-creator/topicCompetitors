@@ -108,20 +108,20 @@ def generate_keywords(main_topic, subtopics):
         try:
             # New OpenAI API format
             response = client.chat.completions.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are an SEO analyst that generates search keywords."},
-                    {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
+                    {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
                 ]
             )
             keywords_text = response.choices[0].message.content
         except AttributeError:
             # Old OpenAI API format
             response = client.ChatCompletion.create(
-                model="gpt-4",
+                model="gpt-4o-mini",
                 messages=[
                     {"role": "system", "content": "You are an SEO analyst that generates search keywords."},
-                    {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
+                    {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
                 ]
             )
             keywords_text = response.choices[0].message.content

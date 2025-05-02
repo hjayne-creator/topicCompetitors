@@ -289,7 +289,7 @@ def generate_summary(top_domains):
     except AttributeError:
         # Old OpenAI API format
         response = client.ChatCompletion.create(
-            model="gpt-4",
+            model="gpt-4o-mini",
             messages=[
                 {"role": "system", "content": "You are a helpful SEO analyst."},
                 {"role": "user", "content": prompt}

@@ -244,7 +244,7 @@ def analyze_domains(keywords_with_serp):
             # Check if URL contains indicators of editorial content or a date pattern
             url_lower = url.lower()
             # Editorial indicators
-            editorial_indicators = ["blog", "insights", "resources", "news", "post","inspiration","guide","article","library","learn","tips"]
+            editorial_indicators = ["blog", "insights", "resources", "news", "post","inspiration","guide","article","library","learn","tips","advice","top","best","types","pulse"]
             has_editorial_word = any(indicator in url_lower for indicator in editorial_indicators)
             # Date pattern: /YYYY/MM/ or /YYYY/MM/DD/
             date_pattern = re.search(r"/\\d{4}/\\d{2}(/\\d{2})?/", url_lower)

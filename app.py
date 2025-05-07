@@ -6,6 +6,10 @@ import json
 from decouple import config
 from urllib.parse import urlparse
 import re
+import aiohttp
+import asyncio
+from typing import List, Dict
+import time
 
 app = Flask(__name__)
 
@@ -46,7 +50,7 @@ def analyze_topic():
         keywords_with_volume = get_search_volume(keywords_data)
         
         # Step 5: Collect SERP data
-        keywords_with_serp = get_serp_data(keywords_with_volume)
+        keywords_with_serp = asyncio.run(get_serp_data(keywords_with_volume))
         
         # Step 6 & 7: Filter content types and analyze domain frequency
         analysis_results = analyze_domains(keywords_with_serp)
@@ -196,11 +200,9 @@ def get_search_volume(keywords_data):
     
     return keywords_data
 
-def get_serp_data(keywords_data):
-    """Get SERP data for each keyword using SerpAPI."""
-    for keyword_data in keywords_data:
-        keyword = keyword_data["keyword"]
-        
+async def get_serp_data(keywords_data: List[Dict]) -> List[Dict]:
+    """Get SERP data for each keyword using SerpAPI concurrently."""
+    async def fetch_serp_data(session: aiohttp.ClientSession, keyword: str) -> List[Dict]:
         base_url = "https://serpapi.com/search"
         params = {
             "q": keyword,
@@ -211,20 +213,44 @@ def get_serp_data(keywords_data):
             "gl": "us"   # Country: United States
         }
         
-        response = requests.get(base_url, params=params)
-        results = response.json()
+        try:
+            async with session.get(base_url, params=params) as response:
+                if response.status == 200:
+                    results = await response.json()
+                    organic_results = results.get("organic_results", [])
+                    
+                    top_results = []
+                    for result in organic_results[:5]:
+                        top_results.append({
+                            "title": result.get("title", ""),
+                            "link": result.get("link", ""),
+                            "snippet": result.get("snippet", "")
+                        })
+                    return top_results
+                else:
+                    print(f"Error fetching SERP data for '{keyword}': {response.status}")
+                    return []
+        except Exception as e:
+            print(f"Exception fetching SERP data for '{keyword}': {str(e)}")
+            return []
+
+    # Create a semaphore to limit concurrent requests
+    sem = asyncio.Semaphore(5)  # Limit to 5 concurrent requests
+    
+    async def fetch_with_semaphore(session: aiohttp.ClientSession, keyword: str) -> List[Dict]:
+        async with sem:
+            return await fetch_serp_data(session, keyword)
+
+    async with aiohttp.ClientSession() as session:
+        tasks = []
+        for keyword_data in keywords_data:
+            task = asyncio.create_task(
+                fetch_with_semaphore(session, keyword_data["keyword"])
+            )
+            tasks.append((keyword_data, task))
         
-        organic_results = results.get("organic_results", [])
-        
-        top_results = []
-        for result in organic_results[:5]:  # Ensure we only get 5 results
-            top_results.append({
-                "title": result.get("title", ""),
-                "link": result.get("link", ""),
-                "snippet": result.get("snippet", "")
-            })
-        
-        keyword_data["top_results"] = top_results
+        for keyword_data, task in tasks:
+            keyword_data["top_results"] = await task
     
     return keywords_data
 

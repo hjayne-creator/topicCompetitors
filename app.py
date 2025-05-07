@@ -115,7 +115,7 @@ def generate_keywords(main_topic, subtopics):
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are an SEO analyst that generates search keywords."},
-                    {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
+                    {"role": "user", "content": f"Generate 3 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 3 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
                 ]
             )
             keywords_text = response.choices[0].message.content
@@ -125,7 +125,7 @@ def generate_keywords(main_topic, subtopics):
                 model="gpt-4",
                 messages=[
                     {"role": "system", "content": "You are an SEO analyst that generates search keywords."},
-                    {"role": "user", "content": f"Generate 5 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 5 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
+                    {"role": "user", "content": f"Generate 3 SEO search keywords for '{topic}'. Keep keywords short and concise, 5 words or less. Return only a list of 3 items, no explanations. Use simple bullet points with dashes (-), not numbered lists."}
                 ]
             )
             keywords_text = response.choices[0].message.content
@@ -139,7 +139,7 @@ def generate_keywords(main_topic, subtopics):
         # Remove any quotation marks from the keywords
         keywords = [keyword.replace('"', '').replace("'", "") for keyword in keywords]
         
-        for keyword in keywords[:5]:  # Ensure we only get 5 keywords
+        for keyword in keywords[:3]:  # Ensure we only get 3 keywords
             keywords_data.append({
                 "keyword": keyword,
                 "related_topic": topic,
